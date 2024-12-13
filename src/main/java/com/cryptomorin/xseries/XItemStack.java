@@ -86,26 +86,32 @@ import static com.cryptomorin.xseries.XMaterial.supports;
  * @see ItemStack
  */
 public final class XItemStack {
-    public static final ItemFlag[] ITEM_FLAGS = ItemFlag.values();
     public static final boolean SUPPORTS_CUSTOM_MODEL_DATA;
 
     /**
      * Because {@link ItemMeta} cannot be applied to {@link Material#AIR}.
      */
     private static final XMaterial DEFAULT_MATERIAL = XMaterial.BARRIER;
-    private static final boolean SUPPORTS_POTION_COLOR;
+    private static final boolean SUPPORTS_POTION_COLOR, SUPPORTS_Inventory_getStorageContents;
     private static final Object REGISTRY_BANNER_PATTERN = supportsRegistry("BANNER_PATTERN");
     private static final PatternType DEFAULT_PATTERN_TYPE = getPatternType("BASE");
 
     static {
-        boolean supportsPotionColor = false;
+        boolean supportsPotionColor = false, supportsGetStorageContents = false;
         try {
             Class.forName("org.bukkit.inventory.meta.PotionMeta").getMethod("setColor", Color.class);
             supportsPotionColor = true;
         } catch (Throwable ignored) {
         }
 
+        try {
+            Inventory.class.getDeclaredMethod("getStorageContents");
+            supportsGetStorageContents = true;
+        } catch (NoSuchMethodException e) {
+        }
+
         SUPPORTS_POTION_COLOR = supportsPotionColor;
+        SUPPORTS_Inventory_getStorageContents = true;
     }
 
     static {
@@ -693,7 +699,7 @@ public final class XItemStack {
             if (tempMeta == null) {
                 // When AIR is null. Useful for when you just want to use the meta to save data and
                 // set the type later. A simple CraftMetaItem.
-                meta = Bukkit.getItemFactory().getItemMeta(XMaterial.STONE.parseMaterial());
+                meta = Bukkit.getItemFactory().getItemMeta(XMaterial.STONE.get());
             } else {
                 meta = tempMeta;
             }
@@ -1077,7 +1083,7 @@ public final class XItemStack {
             }
         } else if (config.getBoolean("glow")) {
             meta.addEnchant(XEnchantment.UNBREAKING.getEnchant(), 1, false);
-            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS); // HIDE_UNBREAKABLE is not for UNBREAKING enchant.
+            XItemFlag.HIDE_ENCHANTS.set(meta);
         }
 
         // Enchanted Books
@@ -1096,17 +1102,16 @@ public final class XItemStack {
             for (String flag : flags) {
                 flag = flag.toUpperCase(Locale.ENGLISH);
                 if (flag.equals("ALL")) {
-                    meta.addItemFlags(ITEM_FLAGS);
+                    XItemFlag.hideEverything(meta);
                     break;
                 }
 
-                ItemFlag itemFlag = Enums.getIfPresent(ItemFlag.class, flag).orNull();
-                if (itemFlag != null) meta.addItemFlags(itemFlag);
+                XItemFlag.of(flag).ifPresent(itemFlag -> itemFlag.set(meta));
             }
         } else {
             String allFlags = config.getString("flags");
             if (!Strings.isNullOrEmpty(allFlags) && allFlags.equalsIgnoreCase("ALL"))
-                meta.addItemFlags(ITEM_FLAGS);
+                XItemFlag.hideEverything(meta);
         }
 
         // Atrributes - https://minecraft.wiki/w/Attribute
@@ -1123,8 +1128,14 @@ public final class XItemStack {
                     // UUID id = attribId != null ? UUID.fromString(attribId) : UUID.randomUUID();
                     EquipmentSlot slot = section.getString("slot") != null ? Enums.getIfPresent(EquipmentSlot.class, section.getString("slot")).or(EquipmentSlot.HAND) : null;
 
-                    AttributeModifier modifier = attributeInst.get().createModifier(
-                            section.getString("name"),
+                    String attrName = section.getString("name");
+                    if (attrName == null) {
+                        attrName = UUID.randomUUID().toString().toLowerCase(Locale.ENGLISH);
+                    }
+
+                    attributeInst.get();
+                    AttributeModifier modifier = XAttribute.createModifier(
+                            attrName,
                             section.getDouble("amount"),
                             Enums.getIfPresent(AttributeModifier.Operation.class, section.getString("operation"))
                                     .or(AttributeModifier.Operation.ADD_NUMBER),
@@ -1286,7 +1297,7 @@ public final class XItemStack {
         // We could pass the length to individual methods, so they could also use getItem() which
         // skips parsing all the items in the inventory if not needed, but that's just too much.
         // Note: This is not the same as Inventory#getSize()
-        int invSize = inventory.getStorageContents().length;
+        int invSize = getStorageContents(inventory).length;
         int lastEmpty = 0;
 
         for (ItemStack item : items) {
@@ -1360,7 +1371,7 @@ public final class XItemStack {
      */
     public static int firstPartial(@NotNull Inventory inventory, @Nullable ItemStack item, int beginIndex, @Nullable Predicate<Integer> modifiableSlots) {
         if (item != null) {
-            ItemStack[] items = inventory.getStorageContents();
+            ItemStack[] items = getStorageContents(inventory);
             int invSize = items.length;
             if (beginIndex < 0 || beginIndex >= invSize)
                 throw new IndexOutOfBoundsException("Begin Index: " + beginIndex + ", Inventory storage content size: " + invSize);
@@ -1432,7 +1443,7 @@ public final class XItemStack {
      * @since 4.0.0
      */
     public static int firstEmpty(@NotNull Inventory inventory, int beginIndex, @Nullable Predicate<Integer> modifiableSlots) {
-        ItemStack[] items = inventory.getStorageContents();
+        ItemStack[] items = getStorageContents(inventory);
         int invSize = items.length;
         if (beginIndex < 0 || beginIndex >= invSize)
             throw new IndexOutOfBoundsException("Begin Index: " + beginIndex + ", Inventory storage content size: " + invSize);
@@ -1457,7 +1468,7 @@ public final class XItemStack {
      */
     public static int firstPartialOrEmpty(@NotNull Inventory inventory, @Nullable ItemStack item, int beginIndex) {
         if (item != null) {
-            ItemStack[] items = inventory.getStorageContents();
+            ItemStack[] items = getStorageContents(inventory);
             int len = items.length;
             if (beginIndex < 0 || beginIndex >= len)
                 throw new IndexOutOfBoundsException("Begin Index: " + beginIndex + ", Size: " + len);
@@ -1469,6 +1480,21 @@ public final class XItemStack {
             }
         }
         return -1;
+    }
+
+    public static ItemStack[] getStorageContents(Inventory inventory) {
+        // Mojang divides player inventory like this:
+        //     public final ItemStack[] items = new ItemStack[36];
+        //     public final ItemStack[] armor = new ItemStack[4];
+        //     public final ItemStack[] extraSlots = new ItemStack[1];
+        if (SUPPORTS_Inventory_getStorageContents) {
+            // v1.9 extends inventory API
+            return inventory.getStorageContents();
+        } else {
+            // Arrays.copyOfRange(this.getContents(), 0, this.getInventory().items.length);
+            // 36 -> boots, 37 -> leggings, 38 -> chestplate, 39 - helmet, 40 -> offhand
+            return Arrays.copyOfRange(inventory.getContents(), 0, 36);
+        }
     }
 
     public static class MaterialCondition extends RuntimeException {

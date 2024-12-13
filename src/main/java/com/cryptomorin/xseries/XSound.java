@@ -23,6 +23,7 @@ package com.cryptomorin.xseries;
 
 import com.cryptomorin.xseries.base.XModule;
 import com.cryptomorin.xseries.base.XRegistry;
+import com.cryptomorin.xseries.base.annotations.XInfo;
 import com.google.common.base.Enums;
 import com.google.common.base.Strings;
 import org.bukkit.*;
@@ -55,7 +56,7 @@ import java.util.stream.Collectors;
  * play command: <a href="https://minecraft.wiki/w/Commands/play">minecraft.wiki/w</a>
  *
  * @author Crypto Morin
- * @version 10.2.0
+ * @version 11.0.0
  * @see Sound
  */
 public final class XSound extends XModule<XSound, Sound> {
@@ -1697,7 +1698,22 @@ public final class XSound extends XModule<XSound, Sound> {
             UI_TOAST_CHALLENGE_COMPLETE = std("ui.toast.challenge_complete"),
             UI_TOAST_IN = std("ui.toast.in"),
             UI_TOAST_OUT = std("ui.toast.out"),
-            WEATHER_RAIN_ABOVE = std("weather.rain.above");
+            WEATHER_RAIN_ABOVE = std("weather.rain.above"),
+            BLOCK_EYEBLOSSOM_CLOSE = std("block.eyeblossom.close"),
+            BLOCK_RESIN_BRICKS_FALL = std("block.resin_bricks.fall"),
+            BLOCK_RESIN_BRICKS_STEP = std("block.resin_bricks.step"),
+            BLOCK_RESIN_PLACE = std("block.resin.place"),
+            ENTITY_CREAKING_TWITCH = std("entity.creaking.twitch"),
+            BLOCK_EYEBLOSSOM_IDLE = std("block.eyeblossom.idle"),
+            BLOCK_RESIN_BREAK = std("block.resin.break"),
+            BLOCK_RESIN_BRICKS_PLACE = std("block.resin_bricks.place"),
+            BLOCK_RESIN_BRICKS_BREAK = std("block.resin_bricks.break"),
+            BLOCK_EYEBLOSSOM_CLOSE_LONG = std("block.eyeblossom.close_long"),
+            BLOCK_RESIN_FALL = std("block.resin.fall"),
+            BLOCK_RESIN_STEP = std("block.resin.step"),
+            BLOCK_EYEBLOSSOM_OPEN = std("block.eyeblossom.open"),
+            BLOCK_RESIN_BRICKS_HIT = std("block.resin_bricks.hit"),
+            BLOCK_EYEBLOSSOM_OPEN_LONG = std("block.eyeblossom.open_long");
     /**
      * ENTITY_GENERIC_WIND_BURST -> ENTITY_WIND_CHARGE_WIND_BURST (v1.20.5)
      */
@@ -1719,12 +1735,11 @@ public final class XSound extends XModule<XSound, Sound> {
     @Deprecated
     public static final XSound
             ITEM_BRUSH_BRUSH_SAND_COMPLETED = std("ITEM_BRUSH_BRUSH_SAND_COMPLETED"),
-            ITEM_GOAT_HORN_PLAY = std("test"),
+            ITEM_GOAT_HORN_PLAY = std("ITEM_GOAT_HORN_PLAY"),
             ITEM_BRUSH_BRUSHING = std("ITEM_BRUSH_BRUSHING");
-    /**
-     * Removed in 1.15
-     */
+
     @Deprecated
+    @XInfo(since = "1.12", removedSince = "1.15")
     public static final XSound
             ENTITY_PARROT_IMITATE_WOLF = std("ENTITY_PARROT_IMITATE_WOLF"),
             ENTITY_PARROT_IMITATE_POLAR_BEAR = std("ENTITY_PARROT_IMITATE_POLAR_BEAR"),
@@ -1796,8 +1811,10 @@ public final class XSound extends XModule<XSound, Sound> {
      * @param sound the name of the sound.
      * @return a matched XSound.
      * @since 1.0.0
+     * @deprecated use {@link #of(String)} instead.
      */
     @NotNull
+    @Deprecated
     public static Optional<XSound> matchXSound(@NotNull String sound) {
         return REGISTRY.getByName(sound);
     }
@@ -1809,14 +1826,30 @@ public final class XSound extends XModule<XSound, Sound> {
      * @return a matched sound.
      * @throws IllegalArgumentException may be thrown as an unexpected exception.
      * @since 2.0.0
+     * @deprecated use {@link #of(Sound)} instead.
      */
     @NotNull
+    @Deprecated
     public static XSound matchXSound(@NotNull Sound sound) {
         return REGISTRY.getByBukkitForm(sound);
     }
 
+    public static XSound of(@NotNull Sound bukkit) {return REGISTRY.getByBukkitForm(bukkit);}
+
+    public static Optional<XSound> of(@NotNull String bukkit) {return REGISTRY.getByName(bukkit);}
+
+    /**
+     * Use {@link #getValues()} instead.
+     */
+    @Deprecated
     public static XSound[] values() {
         return REGISTRY.values();
+    }
+
+    @NotNull
+    @Unmodifiable
+    public static Collection<XSound> getValues() {
+        return REGISTRY.getValues();
     }
 
     private static List<String> split(@NotNull String str, @SuppressWarnings("SameParameterValue") char separatorChar) {
@@ -1945,7 +1978,7 @@ public final class XSound extends XModule<XSound, Sound> {
                 throw new IllegalArgumentException("No sound name specified: " + name);
             }
 
-            Optional<XSound> soundType = matchXSound(soundName);
+            Optional<XSound> soundType = of(soundName);
             if (!soundType.isPresent()) {
                 if (soundName.indexOf(':') != -1) {
                     soundName = soundName.toLowerCase(Locale.ENGLISH);

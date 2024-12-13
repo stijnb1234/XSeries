@@ -1,3 +1,25 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2024 Crypto Morin
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.cryptomorin.xseries.reflection;
 
 import com.cryptomorin.xseries.reflection.jvm.classes.ClassHandle;
@@ -32,7 +54,7 @@ import java.util.*;
  * <pre>{@code
  *      XReflection.of(Test.class).method("public MyCustomClass getCustomData();").unreflect();
  * }</pre>
- *  This will fail, because it doesn't know where {@code MyCustomClass} is, you could give it the fully qualified name:
+ * This will fail, because it doesn't know where {@code MyCustomClass} is, you could give it the fully qualified name:
  * <pre>{@code
  *      XReflection.of(Test.class).method("public my.package.MyCustomClass getCustomData();").unreflect();
  * }</pre>
@@ -84,7 +106,8 @@ public class ReflectiveNamespace {
 
     /**
      * Imports a class with a custom name.
-     * @param name the custom name of the class.
+     *
+     * @param name  the custom name of the class.
      * @param clazz the actual definition of the class.
      * @see #imports(Class[])
      */
@@ -124,6 +147,7 @@ public class ReflectiveNamespace {
 
     /**
      * Same as {@link XReflection#of(Class)}
+     *
      * @since v11.0.0
      */
     public StaticClassHandle of(Class<?> clazz) {
@@ -133,6 +157,7 @@ public class ReflectiveNamespace {
 
     /**
      * Similar to {@link XReflection#classHandle()}
+     *
      * @since v11.0.0
      */
     public DynamicClassHandle classHandle(@Language("Java") String declaration) {
@@ -142,6 +167,7 @@ public class ReflectiveNamespace {
 
     /**
      * Similar to {@link XReflection#ofMinecraft()}
+     *
      * @since v11.0.0
      */
     public MinecraftClassHandle ofMinecraft(@Language("Java") String declaration) {

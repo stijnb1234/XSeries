@@ -1,3 +1,25 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2024 Crypto Morin
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.cryptomorin.xseries.reflection.jvm.classes;
 
 import com.cryptomorin.xseries.reflection.ReflectiveHandle;
@@ -34,8 +56,8 @@ public abstract class ClassHandle implements ReflectiveHandle<Class<?>>, NamedRe
 
     /**
      * @param handle the handle to put the inner class information in.
+     * @param <T>    the type of the class handle.
      * @return the same object as the one provided in the parameter.
-     * @param <T> the type of the class handle.
      */
     public <T extends DynamicClassHandle> T inner(T handle) {
         Objects.requireNonNull(handle, "Inner handle is null");
@@ -47,6 +69,7 @@ public abstract class ClassHandle implements ReflectiveHandle<Class<?>>, NamedRe
 
     /**
      * The array dimension of this class.
+     *
      * @return -1 if this class cannot be found, 0 if not an array, otherwise a positive number.
      */
     public int getDimensionCount() {

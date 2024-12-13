@@ -1,3 +1,25 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2024 Crypto Morin
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package com.cryptomorin.xseries.profiles.mojang;
 
 import com.cryptomorin.xseries.profiles.PlayerProfiles;
@@ -155,6 +177,15 @@ public final class MojangAPI {
         return optional;
     }
 
+    /**
+     * Occasionally a {@code 401 - Unauthorized} error is received which is not likely caused by rate-limiting
+     * because first of all, it'd return {@code 429} if that was the case, and secondly,
+     * the code was run with a 6hr delay. It's currently unknown why this happens.
+     *
+     * @param usernames Case-insensitive list of usernames. Duplicates are ignored and cached names are not requested but returned.
+     * @param config    Request configuration.
+     * @return Map of players that exist.
+     */
     public static Map<UUID, String> usernamesToUUIDs(@NotNull Collection<String> usernames, @Nullable ProfileRequestConfiguration config) {
         if (usernames == null || usernames.isEmpty()) throw new IllegalArgumentException("Usernames are null or empty");
         for (String username : usernames) {
