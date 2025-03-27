@@ -16,18 +16,28 @@ if it's unrelated to adding support for that version since your changes are like
 
 ### Usage
 
-This project uses Maven. So you'll have to use `mvn` commands.
+This project uses a Maven aggregator project. So you'll have to use **mvn** commands.
 In IntelliJ, you can press `Ctrl` twice for the command window to popup.
 To compile the library into `target` folder, you can use this Maven command:
 
 ```maven
-mvn package
+mvn clean package -pl core -am -DskipTests=true -Dmaven.test.skip=true
 ```
+
+> [!NOTE]
+> Since this is a Maven aggregator project, there are a few more command arguments:
+> - **-pl core** also can be used as **--projects core**, means that we only want to `clean package` the `core`
+    subproject, not all subproject.
+> - **-am** (also named **--also-make**) Builds all other subprojects, and any of their dependencies which are required
+    for the `core` subproject.
+>
+> For more information about Maven aggregator projects,
+> visit [Apache Maven's Guide](https://maven.apache.org/guides/mini/guide-multiple-subprojects-4.html).
 
 To test the library using the latest Spigot server, you can use:
 
 ```maven
-mvn clean package -Ptester,latest
+mvn clean test -Ptester,latest -pl core -am
 ```
 
 > [!NOTE]
@@ -42,7 +52,9 @@ mvn clean package -Ptester,latest
   This is no longer the case because of Minecraft's new registry system. It's going to make a lot of boilerplate code
   if we decide to stick to this principle.
 * Only Java 8 should be used. All the functions in the latest version of Java 8 can be used.
-* Make sure the utility works on different Minecraft server versions.
+* Make sure the utility works on different Minecraft server versions. Usually outdated patches should not be supported.
+  For example, in the `1.21` series, only `1.21.5` should be supported not `1.21.4` or `1.21.1` there are of course some
+  exceptions to this rule like enum values.
 * Use method and variable names that make sense and are related to the context.
 * Don't use Optional everywhere that can return null.
 * Using Google's Guava is a plus, but not always. Make sure what you're using is supported in
@@ -70,6 +82,7 @@ I'd like to express my profound gratitude to the following people for really hel
 * @DeadSilenceIV: [XItemStack issues](https://github.com/CryptoMorin/XSeries/commits?author=DeadSilenceIV)
 * @AV3RG: [XTag](https://github.com/CryptoMorin/XSeries/commit/988fee3a0fc80697f99804ca7c13108976f26acd)
 * @SirLeezus: [XItemStack issues](https://github.com/CryptoMorin/XSeries/commits?author=SirLeezus)
-* @datatags: [ParticleDisplay revamp](https://github.com/CryptoMorin/XSeries/pull/265) and for responding to various issues and reporting them.
+* @datatags: [ParticleDisplay revamp](https://github.com/CryptoMorin/XSeries/pull/265) and for responding to various
+  issues and reporting them.
 
 I hope that I didn't forget anyone ;)
